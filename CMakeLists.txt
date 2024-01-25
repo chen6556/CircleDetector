@@ -6,8 +6,10 @@ enable_testing()
 
 if (MSVC)
     # 设置 msvc 输入代码编码格式为 utf-8
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+    add_compile_options("/utf-8")
+    add_compile_options("/arch:AVX2")
+    add_compile_options("/GL")
+    add_link_options("/LTCG")
 endif()
 
 set(CMAKE_AUTOUIC ON)
@@ -18,40 +20,29 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Qt库
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Gui Core)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Gui Core)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Gui Core)
 
 # OpenCV库
-set(OpenCV_DIR "D:/CPPLibs/opencv460/opencv/build/x64/vc17/lib") # 找到lib文件目录
-find_package(OpenCV REQUIRED)	# 找到OpenCV库
+find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-# Boost库
-# set(Boost_ROOT "D:/CPPLibs/boost_1_80_0")
-# find_package(Boost REQUIRED COMPONENTS)
-# link_directories(${Boost_LIBRARY_DIRS})
-# include_directories(${Boost_INCLUDE_DIRS})
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/output/)
 
 add_subdirectory(src)
 include_directories(inc)
-include_directories(inc/ui)
-include_directories(inc/base)
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(CircleDetector
-        MANUAL_FINALIZATION
-        src/main.cpp
-        inc/ui/MainWindow.hpp
-        inc/base/Label.hpp
-        inc/ui/ParametersDialog.hpp
-        ${_UI_SOURCES}
-        ${_BASE_SOURCES}
-    )
-endif()
+qt_add_executable(CircleDetector
+    MANUAL_FINALIZATION
+    src/main.cpp
+    inc/ui/MainWindow.hpp
+    inc/base/Label.hpp
+    inc/ui/ParametersDialog.hpp
+    ${_UI_SOURCES}
+    ${_BASE_SOURCES}
+)
 
-target_link_libraries(CircleDetector PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Core ${OpenCV_LIBRARIES})
+target_link_libraries(CircleDetector PRIVATE Qt6::Widgets Qt6::Gui Qt6::Core ${OpenCV_LIBRARIES})
 
 set_target_properties(CircleDetector PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
@@ -61,9 +52,9 @@ set_target_properties(CircleDetector PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(CircleDetector)
-endif()
+
+qt_finalize_executable(CircleDetector)
+
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
