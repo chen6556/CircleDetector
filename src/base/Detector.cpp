@@ -43,7 +43,7 @@ const QPixmap Detector::result_to_QPixmap() const
     return QPixmap::fromImage(result_to_QImage());
 }
 
-void Detector::detect(double param1, double param2, int minRadius, int maxRadius)
+void Detector::detect(const double param1, const double param2, const int min_radius, const int max_radius, const double area_deviation)
 {
     cv::Mat gray;
     cv::cvtColor(_src, gray, cv::COLOR_RGB2GRAY);
@@ -59,7 +59,7 @@ void Detector::detect(double param1, double param2, int minRadius, int maxRadius
                         gray.rows/32,  // Minimum distance between detected centers.
                         param1, // Upper threshold for the internal Canny edge detector.
                         param2,  // Threshold for center detection.
-                        minRadius, maxRadius // (min_radius & max_radius) to detect larger circles.
+                        min_radius, max_radius // (min_radius & max_radius) to detect larger circles.
                         );
         for (const cv::Vec3i& c : circles)
         {
@@ -85,7 +85,7 @@ void Detector::detect(double param1, double param2, int minRadius, int maxRadius
         for (const std::vector<cv::Point> &contour : contours)
         {
             min_rect = cv::minAreaRect(contour);
-            if (std::abs(1.0 - cv::contourArea(contour) / (min_rect.size.width * min_rect.size.height)) < 0.1)
+            if (std::abs(1.0 - cv::contourArea(contour) / (min_rect.size.width * min_rect.size.height)) < area_deviation)
             {
                 min_rect.points(points);
                 cv::line(_src, points[0], points[1], cv::Scalar(255, 0, 0), 3, cv::LINE_AA);

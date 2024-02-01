@@ -23,5 +23,6 @@ public:
     const QImage result_to_QImage() const;
     const QPixmap result_to_QPixmap() const;
 
-    void detect(double param1 = 80, double param2 = 100, int minRadius = 10, int maxRadius = 200);
+    void detect(const double param1 = 80, const double param2 = 100, const int min_adius = 10,
+        const int max_adius = 200, const double area_deviation = 0.1);
 };

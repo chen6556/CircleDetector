@@ -174,7 +174,7 @@ void MainWindow::select(const QModelIndex& index)
 void MainWindow::detect()
 {
     _detector.load_img(_label->pixmap());
-    _detector.detect(_params.at(0), _params.at(1), _params.at(2), _params.at(3));
+    _detector.detect(_params.at(0), _params.at(1), _params.at(2), _params.at(3), _params.at(4));
     _label->setPixmap(_detector.result_to_QPixmap());
 }
 
