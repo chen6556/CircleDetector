@@ -37,9 +37,10 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Label *_label;
-    Detector *_detector;
+    Detector _detector;
 
-    std::vector<double> *_params;
+    std::vector<double> _params;
+    std::vector<bool> _flags;
     QString _path;
     QStringList _file_list;
     QStringListModel *_file_model;

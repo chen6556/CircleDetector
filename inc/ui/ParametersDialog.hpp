@@ -14,10 +14,11 @@ class ParametersDialog: public QDialog
 private:
     Ui::ParametersDialog *ui;
     std::vector<double> *_params;
+    std::vector<bool> *_flags;
 
 private slots:
     void refresh_params();
 
 public:
-    ParametersDialog(std::vector<double> *params, QWidget* parent = nullptr);
+    ParametersDialog(std::vector<double> *params, std::vector<bool> *flags, QWidget* parent = nullptr);
 };

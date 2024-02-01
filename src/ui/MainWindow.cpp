@@ -12,8 +12,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , _file_model(new QStringListModel)
     , _label(new Label)
-    , _detector(new Detector)
-    , _params(new std::vector<double>)
 {
     ui->setupUi(this);
     init();
@@ -24,21 +22,25 @@ MainWindow::~MainWindow()
     delete ui;
     delete _file_model;
     delete _label;
-    delete _detector;
-    QJsonArray array;
-    for (const double& param : *_params)
+    QJsonArray params;
+    for (const double param : _params)
     {
-        array.append(param);
+        params.append(param);
+    }
+    QJsonArray flags;
+    for (const bool flag : _flags)
+    {
+        flags.append(flag);
     }
     QJsonObject obj;
     obj.insert("path", _path.isEmpty() ? "C:/" : _path);
-    obj.insert("params", array);
+    obj.insert("params", params);
+    obj.insert("flags", flags);
     QJsonDocument doc(obj);
     QFile file("./config.json");
     file.open(QIODevice::WriteOnly);
     file.write(doc.toJson());
     file.close();
-    delete _params;
 }
 
 void MainWindow::init()
@@ -55,19 +57,28 @@ void MainWindow::init()
     {
         QJsonObject obj = document.object();
         _path = obj.value("path").toString();
-        QJsonArray array = obj.value("params").toArray();
-        for (size_t i = 0; i < 4; ++i)
+        for (const QJsonValueRef param : obj.value("params").toArray())
         {
-            _params->push_back(array.at(i).toDouble());
+            _params.push_back(param.toDouble());
         }
+        for (const QJsonValueRef flag : obj.value("flags").toArray())
+        {
+            _flags.push_back(flag.toBool());
+        }
+        _detector.set_detect_circle(_flags.at(0));
+        _detector.set_detect_rectangle(_flags.at(1));
     }
     else
     {
         _path = "C:/";
-        _params->push_back(80);
-        _params->push_back(20);
-        _params->push_back(10);
-        _params->push_back(200);
+        _params.push_back(80);
+        _params.push_back(20);
+        _params.push_back(10);
+        _params.push_back(200);
+        _params.push_back(0.1);
+
+        _flags.push_back(true);
+        _flags.push_back(false);
     }
 }
 
@@ -162,9 +173,9 @@ void MainWindow::select(const QModelIndex& index)
 
 void MainWindow::detect()
 {
-    _detector->load_img(_label->pixmap());
-    _detector->detect(_params->at(0), _params->at(1), _params->at(2), _params->at(3));
-    _label->setPixmap(_detector->result_to_QPixmap());
+    _detector.load_img(_label->pixmap());
+    _detector.detect(_params.at(0), _params.at(1), _params.at(2), _params.at(3));
+    _label->setPixmap(_detector.result_to_QPixmap());
 }
 
 void MainWindow::show_image()
@@ -177,7 +188,9 @@ void MainWindow::show_image()
 
 void MainWindow::edit_params()
 {
-    ParametersDialog *dialog = new ParametersDialog(_params);
-    dialog->exec();
-    delete dialog;
+    ParametersDialog dialog(&_params, &_flags, this);
+    dialog.exec();
+
+    _detector.set_detect_circle(_flags.at(0));
+    _detector.set_detect_rectangle(_flags.at(1));
 }
